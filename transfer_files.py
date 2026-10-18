@@ -185,3 +185,44 @@ print("\nTraining completed successfully!")
 
 print("Model saved at:")
 print(model_path)
+
+
+import cv2
+import numpy as np
+from tensorflow.keras.models import load_model
+
+# Load the trained model
+model = load_model(r'C:\Users\mahat\OneDrive\Desktop\Machine_learning\emotion_mobilenetv2.keras')
+
+# Class labels (same order as training)
+class_labels = ['angry', 'happy', 'neutral', 'sad', 'surprise']
+
+# Open webcam
+cap = cv2.VideoCapture(0)  # 0 = default camera
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    # Resize to model input size
+    img = cv2.resize(frame, (96, 96))
+    img = np.expand_dims(img, axis=0)
+    img = img.astype('float32')
+
+    # Predict
+    preds = model.predict(img)
+    emotion = class_labels[np.argmax(preds)]
+
+    # Show prediction on frame
+    cv2.putText(frame, emotion, (10, 40),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+    cv2.imshow('Emotion Detection', frame)
+
+    # Press 'q' to quit
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
